@@ -34,10 +34,16 @@ typedef struct Task {
     int wake_up_time;     // 預計喚醒時間 (用於 Sleep)
     int rr_quantum_left;  // RR 剩餘時間片
     
+    // --- 新增 I/O 相關參數 ---
+    int io_burst_cycle;   // 每次 I/O 發生前需要運行的 Burst Time (例如 2)
+    int io_sleep_duration; // I/O 阻塞的持續時間 (例如 5)
+    int current_cycle_count; // 當前週期已經運行的 Burst Time
+    // -------------------------
+    
     struct Task* next;    // 連結串列指標
 } Task;
 
-// 建立新任務的輔助函式 (實作在 queue.c 或 main.c 皆可，這裡我們放在 queue.c 方便管理)
-Task* createTask(int id, const char* name, int burst, int prio);
+// 更新 createTask 宣告以匹配新的參數列表
+Task* createTask(int id, const char* name, int burst, int prio, int io_cycle, int io_sleep);
 
 #endif

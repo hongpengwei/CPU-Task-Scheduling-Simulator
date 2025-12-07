@@ -9,7 +9,8 @@ void initQueue(Queue* q) {
     q->tail = NULL;
 }
 
-Task* createTask(int id, const char* name, int burst, int prio) {
+// 函式簽名更新：新增 io_cycle 和 io_sleep 參數
+Task* createTask(int id, const char* name, int burst, int prio, int io_cycle, int io_sleep) {
     Task* t = (Task*)malloc(sizeof(Task));
     t->id = id;
     strcpy(t->name, name);
@@ -19,6 +20,13 @@ Task* createTask(int id, const char* name, int burst, int prio) {
     t->state = READY;
     t->wake_up_time = 0;
     t->rr_quantum_left = 0;
+    
+    // --- 初始化 I/O 參數 ---
+    t->io_burst_cycle = io_cycle;
+    t->io_sleep_duration = io_sleep;
+    t->current_cycle_count = 0; // 初始計數為 0
+    // ------------------------
+    
     t->next = NULL;
     return t;
 }
