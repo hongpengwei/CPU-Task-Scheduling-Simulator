@@ -22,7 +22,13 @@ void AddToReadyQueue(Task* t) {
         insertSorted(&ReadyQueue, t, 1); // 按剩餘時間排序
     } else if (CURRENT_TYPE == SCHED_PRIORITY) {
         insertSorted(&ReadyQueue, t, 2); // 按優先權排序
-    } else {
+    }else if (CURRENT_TYPE == SCHED_LIFO) {
+        // LIFO: 將新任務放在隊列頭部
+        t->next = ReadyQueue.head;
+        ReadyQueue.head = t;
+        if (ReadyQueue.tail == NULL) ReadyQueue.tail = t;
+    } 
+    else {
         enqueue(&ReadyQueue, t); // FCFS 和 RR 直接排隊尾
     }
 }

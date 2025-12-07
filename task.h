@@ -15,7 +15,8 @@ typedef enum {
     SCHED_FCFS,
     SCHED_RR,
     SCHED_SJF,
-    SCHED_PRIORITY
+    SCHED_PRIORITY,
+    SCHED_LIFO // 新增 LIFO 類型
 } SchedulerType;
 
 // 任務控制塊 (PCB - Process Control Block)
