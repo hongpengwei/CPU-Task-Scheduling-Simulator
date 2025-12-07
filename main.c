@@ -8,9 +8,11 @@
 #include "system.h"
 
 int main(int argc, char* argv[]) {
-    // 1. 處理參數並設定排程器
+    // 1. 處理參數
     if (argc < 2) {
-        printf("Usage: %s [FCFS|RR|SJF|PRIORITY]\n", argv[0]);
+        // --- 更新提示訊息 ---
+        printf("Usage: %s [FCFS|RR|SJF|PRIORITY|LIFO]\n", argv[0]);
+        // -------------------
         return 1;
     }
 

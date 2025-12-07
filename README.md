@@ -1,154 +1,292 @@
-## Project Overview
+Collecting workspace information# CPU Task Scheduling Simulator - Reproduction Document
 
-This is a **CPU Task Scheduling Simulator** written in C that implements multiple scheduling algorithms commonly used in operating systems. The simulator demonstrates how different scheduling strategies handle task execution, context switching, and system calls like sleep.
+## Overview
+This document provides step-by-step instructions to reproduce and test the CPU Task Scheduling Simulator, a C-based project that implements multiple CPU scheduling algorithms.
 
-## Features
+## System Requirements
+- **OS:** Linux, macOS, or Windows (with WSL/MinGW)
+- **Compiler:** GCC 7.0 or later
+- **Build Tool:** GNU Make
+- **RAM:** Minimum 256 MB
+- **Disk Space:** ~5 MB
 
-- **Multiple Scheduling Algorithms:**
-  - FCFS (First Come First Served)
-  - RR (Round Robin)
-  - SJF (Shortest Job First)
-  - PRIORITY (Priority-based Scheduling)
+## Project Setup
 
-- **System Features:**
-  - Task state management (READY, RUNNING, SLEEPING, TERMINATED)
-  - Sleep system call with wake-up timer
-  - Hardware interrupt simulation (alarm checking)
-  - Context switching
-  - Time quantum support for Round Robin
-
-## Project Structure
-
+### Step 1: Clone/Download the Project
+```bash
+cd ~/Desktop/c_project
 ```
-.
-├── main.c              # Main simulation loop and entry point
-├── system.c            # System initialization and syscall implementations
-├── system.h            # System header with global variables
-├── scheduler.c         # Scheduling algorithm logic
-├── scheduler.h         # Scheduler interface
-├── queue.c             # Queue data structure and task operations
-├── queue.h             # Queue header
-├── task.h              # Task control block (PCB) definition
-├── Makefile            # Build configuration
-└── README.md           # This file
+
+The project structure should be:
 ```
+c_project/
+├── main.c
+├── system.c
+├── system.h
+├── scheduler.c
+├── scheduler.h
+├── queue.c
+├── queue.h
+├── task.h
+├── Makefile
+└── README.md
+```
+
+### Step 2: Verify File Integrity
+Confirm all files are present by running:
+```bash
+ls -la
+```
+
+Expected output should show all 10 files listed above.
 
 ## Building the Project
 
-### Prerequisites
-- GCC compiler
-- Make utility
-
-### Build Commands
-
+### Standard Build
 ```bash
-# Build the project
-make
-
-# Clean build artifacts
 make clean
+make
 ```
 
-### Output
-The build produces an executable named `sim`.
+**Expected Output:**
+```
+gcc -Wall -g -c main.c
+gcc -Wall -g -c system.c
+gcc -Wall -g -c scheduler.c
+gcc -Wall -g -c queue.c
+gcc -Wall -g -o sim main.o system.o scheduler.o queue.o
+```
 
-## Usage
-
-Run the simulator with a scheduling algorithm argument:
-
+### Verify Build Success
 ```bash
-./sim FCFS        # First Come First Served
-./sim RR          # Round Robin (default)
-./sim SJF         # Shortest Job First
-./sim PRIORITY    # Priority-based Scheduling
+ls -la sim
 ```
 
-## Example Output
+Should output: `-rwxr-xr-x ... sim` (executable file)
+
+## Running the Simulator
+
+### Test Case 1: FCFS (First Come First Served)
+```bash
+./sim FCFS
+```
+
+**Input Example:**
+```
+3
+6
+0
+10
+0
+4
+0
+```
+
+**Expected Behavior:**
+- Tasks execute in arrival order: Task_1 → Task_2 → Task_3
+- No preemption occurs
+- Output shows sequential execution with increasing tick times
+
+### Test Case 2: Round Robin (RR)
+```bash
+./sim RR
+```
+
+**Input Example:**
+```
+3
+6
+0
+10
+0
+4
+0
+```
+
+**Expected Behavior:**
+- Tasks execute with 2-tick time quantum
+- Context switches occur when quantum expires
+- Output shows interleaved execution
+
+### Test Case 3: Shortest Job First (SJF)
+```bash
+./sim SJF
+```
+
+**Input Example:**
+```
+3
+6
+0
+10
+0
+4
+0
+```
+
+**Expected Behavior:**
+- Task_3 (burst=4) executes first
+- Task_1 (burst=6) executes second
+- Task_2 (burst=10) executes last
+- Optimal average waiting time
+
+### Test Case 4: Priority Scheduling
+```bash
+./sim PRIORITY
+```
+
+**Input Example:**
+```
+3
+6
+1
+10
+3
+4
+2
+```
+
+**Expected Behavior:**
+- Higher priority values execute first
+- Task_2 (priority=3) → Task_3 (priority=2) → Task_1 (priority=1)
+- Respects priority ordering
+
+### Test Case 5: LIFO (Last In First Out)
+```bash
+./sim LIFO
+```
+
+**Input Example:**
+```
+3
+6
+0
+10
+0
+4
+0
+```
+
+**Expected Behavior:**
+- Most recently added task executes first
+- Task_3 → Task_2 → Task_1
+- Stack-based ordering
+
+## Expected Output Format
+
+Each simulation produces output like:
 
 ```
 Simulation Starting with RR Scheduler...
 
+Please enter the total number of tasks: 2
+  Enter Burst Time for Task_1: 6
+  Enter Priority (Higher number = Higher Priority) for Task_1: 0
+  Enter Burst Time for Task_2: 4
+  Enter Priority (Higher number = Higher Priority) for Task_2: 0
+All tasks loaded. Starting simulation loop.
+
 Tick 0:
-  -> Context Switch: Task_A started running.
-  [CPU] Executing Task_A (Remaining: 6)
+  -> Context Switch: Task_1 started running (Remaining: 6).
+  [CPU] Executing Task_1 (Remaining: 6)
 
 Tick 1:
-  -> RR Time Quantum expired for Task_A.
-  [CPU] Executing Task_B (Remaining: 10)
-    [SYSCALL] Task Task_B calls Sleep(5). Wake up at tick 8.
-  
-Tick 8:
-    [ALARM] Task_B woke up! Moving to ReadyQueue.
+  -> RR Time Quantum expired for Task_1.
+  [CPU] Executing Task_2 (Remaining: 4)
 
-Simulation Finished.
+Tick 2:
+  *** Task_2 Finished! ***
+
+...
+
+Simulation Finished. Total Ticks: 10
 ```
 
-## Architecture
+## Test Cases Summary
 
-### Task Control Block (PCB)
-Defined in task.h, each task contains:
-- Task identification (ID, name)
-- Timing information (burst time, remaining time)
-- Scheduling parameters (priority, RR quantum)
-- State information (current state, wake-up time)
+| Scheduler | Tasks | Burst Times | Expected Order | Notes |
+|-----------|-------|-------------|-----------------|-------|
+| FCFS | 3 | 6,10,4 | 1→2→3 | Non-preemptive |
+| RR | 3 | 6,10,4 | Mixed interleaved | 2-tick quantum |
+| SJF | 3 | 6,10,4 | 3→1→2 | Shortest first |
+| PRIORITY | 3 | 6,10,4 + Priority | Depends on priority | User-defined |
+| LIFO | 3 | 6,10,4 | 3→2→1 | Stack-based |
 
-### Queue Management
-queue.c and queue.h implement:
-- Standard queue operations (enqueue, dequeue)
-- Sorted insertion with multiple modes for different algorithms
-- Support for priority-based and time-based ordering
+## Verification Checklist
 
-### Scheduler
-scheduler.c and scheduler.h manage:
-- Algorithm selection via `SetSchedulerType()`
-- Task queuing based on algorithm type
-- Next task selection with appropriate initialization
+- [ ] Project compiles without errors or warnings
+- [ ] Executable `sim` is created
+- [ ] All 5 scheduler types run without crashing
+- [ ] Output formats correctly with tick-by-tick execution
+- [ ] Tasks complete and final count matches input
+- [ ] No memory leaks (test with `valgrind ./sim FCFS`)
 
-### System Management
-system.c and system.h handle:
-- Global time tracking
-- Sleep queue management
-- Wake-up detection via `CheckAlarm()`
-- System call implementations
+## Debugging
 
-## Test Case
+### Common Issues
 
-The default test in main.c creates three tasks:
+**Issue: "No such file or directory"**
+```bash
+# Ensure you're in the correct directory
+pwd  # Should end with /c_project
+```
 
-| Task ID | Name    | Burst Time | Priority |
-|---------|---------|------------|----------|
-| 1       | Task_A  | 6          | 1        |
-| 2       | Task_B  | 10         | 3        |
-| 3       | Task_C  | 4          | 2        |
+**Issue: Compilation errors**
+```bash
+# Check GCC version
+gcc --version  # Should be 7.0+
 
-Task_B demonstrates the sleep syscall at 8 ticks remaining, sleeping for 5 ticks.
+# Clean and rebuild
+make clean && make
+```
 
-## Key Components
+**Issue: Infinite loop**
+- Check if `GLOBAL_TIME` exceeds 1000 ticks
+- Verify task burst times are positive integers
+- Ensure total tasks count matches input count
 
-- **main.c**: Simulation loop with task creation and scheduling decisions
-- **system.c**: System initialization, sleep handling, and alarm checking
-- **scheduler.c**: Queue management and algorithm-specific task ordering
-- **queue.c**: Core data structure with polymorphic insertion logic
+### Enable Verbose Debugging
+Recompile with debug symbols:
+```bash
+make clean
+gcc -Wall -g -DDEBUG -c main.c system.c scheduler.c queue.c
+gcc -Wall -g -o sim *.o
+```
 
-## Simulation Flow
+## Performance Testing
 
-1. Initialize system and ready queue
-2. Create test tasks and add to ready queue
-3. **Main Loop (per tick):**
-   - Check alarms (wake sleeping tasks)
-   - Select next task if CPU idle
-   - Execute current task or go idle
-   - Increment global time
-4. Repeat until all tasks complete (max 100 ticks safety limit)
+### Stress Test
+```bash
+./sim RR
+10        # 10 tasks
+5 5 5 5 5 5 5 5 5 5  # 10 tasks with burst time 5
+```
 
-## Compilation Flags
+Expected: Completes in ~50 ticks without issues
 
-- `-Wall`: Enable all compiler warnings
-- `-g`: Include debugging symbols
+## Cleanup
 
-## Notes
+To remove build artifacts:
+```bash
+make clean
+```
 
-- Maximum simulation time: 100 ticks (safety limit)
-- Round Robin time quantum: 2 ticks (configurable via `TIME_QUANTUM`)
-- Priority values: Higher number = higher priority
+To remove everything including executable:
+```bash
+make clean
+rm -f sim
+```
+
+## References
+
+- Task Control Block Definition
+- Queue Implementation
+- Scheduler Logic
+- System Calls
+
+## Support & Notes
+
+- Maximum simulation time: 1000 ticks (safety limit)
+- Round Robin time quantum: 2 ticks (configurable in system.h)
+- Priority: Higher numbers = higher priority
 - Task names limited to 20 characters
