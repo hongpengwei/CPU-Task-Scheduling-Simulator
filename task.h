@@ -28,7 +28,9 @@ typedef struct Task {
     int burst_time;       // 總執行時間
     int remaining_time;   // 剩餘執行時間
     int priority;         // 優先權 (數值大 = 優先權高)
-    
+    // --- 新增統計欄位 ---
+    int total_waiting_time; // 紀錄在 ReadyQueue 裡待了多久
+    // --------------------
     // 執行狀態
     TaskState state;
     int wake_up_time;     // 預計喚醒時間 (用於 Sleep)

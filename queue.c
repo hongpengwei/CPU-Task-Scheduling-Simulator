@@ -20,7 +20,7 @@ Task* createTask(int id, const char* name, int burst, int prio, int io_cycle, in
     t->state = READY;
     t->wake_up_time = 0;
     t->rr_quantum_left = 0;
-    
+    t->total_waiting_time = 0; // 初始化為 0
     // --- 初始化 I/O 參數 ---
     t->io_burst_cycle = io_cycle;
     t->io_sleep_duration = io_sleep;
@@ -64,9 +64,9 @@ void insertSorted(Queue* q, Task* t, int mode) {
     if (q->head == NULL) {
         head_condition = 1;
     } else {
-        if (mode == 0)      head_condition = (t->wake_up_time < q->head->wake_up_time);
-        else if (mode == 1) head_condition = (t->remaining_time < q->head->remaining_time);
-        else if (mode == 2) head_condition = (t->priority > q->head->priority);
+        if (mode == 0)      head_condition = (t->wake_up_time < q->head->wake_up_time);   // SleepList 使用喚醒時間排序
+        else if (mode == 1) head_condition = (t->remaining_time < q->head->remaining_time); // SJF 使用剩餘時間排序
+        else if (mode == 2) head_condition = (t->priority > q->head->priority);  // Priority 使用優先權排序
     }
 
     if (head_condition) {

@@ -2,6 +2,7 @@
 #include "scheduler.h"
 #include "system.h" // 需要存取全域變數 TIME_QUANTUM
 #include <stdlib.h> // <-- 新增這一行
+#include <stdio.h>  // 新增這一行
 static SchedulerType CURRENT_TYPE = SCHED_RR;
 
 // 引用 system.c 中的 ReadyQueue
@@ -44,4 +45,18 @@ Task* GetNextTask() {
     }
     
     return next;
+}
+
+void PerformAging(Queue* q) {
+    if (CURRENT_TYPE != SCHED_PRIORITY || isEmpty(q)) return;
+
+    Task* curr = q->head;
+    while (curr != NULL) {
+        curr->priority++; // 隨著時間過去，優先權提升
+        // 注意：為了簡化，這裡僅提升數值。
+        // 在嚴格的實作中，改變優先權後可能需要重新排序 Queue。
+        // 但為了模擬器效能，通常讓他在下一次被 Insert 時生效即可，
+        printf("  [Aging] Task %s priority increased to %d\n", curr->name, curr->priority);
+        curr = curr->next;
+    }
 }
